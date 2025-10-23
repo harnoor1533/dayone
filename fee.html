@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Menu</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+
+  /* Navigation bar */
+  .navbar {
+    background-color: #b80000;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar a {
+    color: white;
+    text-decoration: none;
+    margin-right: 20px;
+    font-size: 18px;
+    position: relative;
+  }
+
+  /* Dropdown menu */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 1;
+  }
+
+  .dropdown-content a {
+    color: black;
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+  }
+
+  .dropdown-content a:hover {
+    background-color: #f2f2f2;
+  }
+
+  /* Show dropdown on hover */
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+  <div class="dropdown">
+    <a href="#">Book ▾</a>
+    <div class="dropdown-content">
+      <a href="#">Art, Film & Photography</a>
+      <a href="#">Language & Creative Writing</a>
+      <a href="#">Biographies & Memoire</a>
+      <a href="#">Fiction & Literature</a>
+      <a href="#">Business & Economics</a>
+      <a href="#">Science & Environment</a>
+    </div>
+  </div>
+
+  <a href="#">New Arrivals</a>
+  <a href="#">Bestsellers</a>
+  <a href="#">Award Winners</a>
+</div>
+
+</body>
+</html>
