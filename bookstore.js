@@ -1,128 +1,165 @@
+const API_URL = "http://localhost:3000"; // JSON-server URL
 
-// ---------------- WISHLIST FUNCTIONALITY ----------------
-const hearts = document.querySelectorAll('.whishlist-icon i');
-const wishlistIcon = document.getElementById('whishlist-icon');
+async function loadBooks() {
+  try {
+    const res = await fetch(`${API_URL}/books`);
+    const books = await res.json();
 
-let wishlistCount = document.createElement('span');
-wishlistCount.id = "wishlist-count";
-wishlistCount.style.backgroundColor = "red";
-wishlistCount.style.color = "white";
-wishlistCount.style.borderRadius = "50%";
-wishlistCount.style.padding = "2px 6px";
-wishlistCount.style.fontSize = "12px";
-wishlistCount.style.position = "absolute";
-wishlistCount.style.top = "0";
-wishlistCount.style.right = "-10px";
-wishlistCount.innerText = "0";
-wishlistIcon.parentElement.style.position = "relative";
-wishlistIcon.parentElement.appendChild(wishlistCount);
+    const container = document.querySelector('.container');
+    container.innerHTML = ''; // clear previous books
 
-let count = 0;
+    books.forEach(book => {
+      const bookDiv = document.createElement('div');
+      bookDiv.classList.add('book');
+      bookDiv.innerHTML = `
+        <div class="whishlist-icon"><i class="fas fa-heart"></i></div>
+        <img src="${book.image}" alt="${book.title}">
+        <h3>${book.title}</h3>
+        <h4>by ${book.author}</h4>
+        <p><span class="discount">₹${book.price + 100}</span> <span class="price">₹${book.price}</span></p>
+        <div class="rating">
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="far fa-star"></i>
+        </div>
+        <button class="add-cart"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+      `;
+      container.appendChild(bookDiv);
+    });
 
-hearts.forEach(heart => {
-  heart.addEventListener('click', () => {
-    if (heart.classList.contains('active')) {
-      heart.classList.remove('active');
-      heart.style.color = 'gray';
-      count--;
-    } else {
-      heart.classList.add('active');
-      heart.style.color = 'red';
-      count++;
-    }
-    wishlistCount.innerText = count;
-  });
-});
+    attachListeners(); 
+  } catch (err) {
+    console.error("Error loading books:", err);
+  }
+}
 
+function attachListeners() {
+  setupWishlist();
+  setupCart();
+}
 
-// ------------------ CART FUNCTIONALITY ------------------
-const cartButtons = document.querySelectorAll('.add-cart');
-const cartIcon = document.querySelector('.fa-shopping-cart');
+async function setupWishlist() {
+  const hearts = document.querySelectorAll('.whishlist-icon i');
+  const wishlistIcon = document.getElementById('whishlist-icon');
 
-let cartCount = document.createElement('span');
-cartCount.id = "cart-count";
-cartCount.style.backgroundColor = "red";
-cartCount.style.color = "white";
-cartCount.style.borderRadius = "50%";
-cartCount.style.padding = "2px 6px";
-cartCount.style.fontSize = "12px";
-cartCount.style.position = "absolute";
-cartCount.style.top = "0";
-cartCount.style.right = "-10px";
-cartCount.innerText = "0";
-cartIcon.parentElement.style.position = "relative";
-cartIcon.parentElement.appendChild(cartCount);
+  // Wishlist count badge
+  let countSpan = document.getElementById("wishlist-count");
+  if (!countSpan) {
+    countSpan = document.createElement("span");
+    countSpan.id = "wishlist-count";
+    countSpan.style.cssText = `
+      background-color:red;
+      color:white;
+      border-radius:50%;
+      padding:2px 6px;
+      font-size:12px;
+      position:absolute;
+      top:0;
+      right:-10px;
+    `;
+    wishlistIcon.parentElement.style.position = "relative";
+    wishlistIcon.parentElement.appendChild(countSpan);
+  }
 
-let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
-cartCount.innerText = cartItems.length;
+  const res = await fetch(`${API_URL}/wishlist`);
+  const wishlist = await res.json();
+  countSpan.innerText = wishlist.length;
 
-cartButtons.forEach(button => {
-  button.addEventListener('click', (e) => {
-    const book = e.target.closest('.book');
-    const title = book.querySelector('h3').innerText;
-    const price = book.querySelector('.price').innerText.replace('₹', '').trim();
-    const image = book.querySelector('img').src;
+  hearts.forEach(heart => {
+    heart.addEventListener('click', async () => {
+      const bookDiv = heart.closest('.book');
+      const title = bookDiv.querySelector('h3').innerText;
+      const price = bookDiv.querySelector('.price').innerText.replace('₹','').trim();
+      const image = bookDiv.querySelector('img').src;
 
-    const existing = cartItems.find(item => item.title === title);
-    if (!existing) {
-      cartItems.push({ title, price, image });
-      localStorage.setItem("cartItems", JSON.stringify(cartItems));
-      cartCount.innerText = cartItems.length;
-      alert(`${title} added to cart 🛒`);
-    } else {
-      alert(`${title} is already in cart.`);
-    }
-  });
-});
+   
+      const wishRes = await fetch(`${API_URL}/wishlist`);
+      const wishlistData = await wishRes.json();
+      const exists = wishlistData.find(b => b.title === title);
 
+      if (exists) {
+        // Remove from wishlist
+        await fetch(`${API_URL}/wishlist/${exists.id}`, { method: "DELETE" });
+        heart.classList.remove('active');
+        heart.style.color = 'gray';
+      } else {
+        // Add to wishlist
+        await fetch(`${API_URL}/wishlist`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, price, image })
+        });
+        heart.classList.add('active');
+        heart.style.color = 'red';
+      }
 
-// ------------------ CART VALIDATION ------------------
-const proceedBtn = document.getElementById("proceedToPay");
-if (proceedBtn) {
-  proceedBtn.addEventListener("click", () => {
-    const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
-    if (cartItems.length === 0) {
-      alert("Your cart is empty. Add items before proceeding to payment.");
-    } else {
-      window.location.href = "payment.html"; // redirect to payment page
-    }
+ 
+      const updatedRes = await fetch(`${API_URL}/wishlist`);
+      const updatedWishlist = await updatedRes.json();
+      countSpan.innerText = updatedWishlist.length;
+    });
   });
 }
 
 
-// ------------------ PAYMENT VALIDATION ------------------
-const paymentForm = document.getElementById("paymentForm");
-if (paymentForm) {
-  paymentForm.addEventListener("submit", function(e) {
-    e.preventDefault();
+async function setupCart() {
+  const cartButtons = document.querySelectorAll('.add-cart');
+  const cartIcon = document.querySelector('.fa-shopping-cart');
 
-    const name = document.getElementById("name").value.trim();
-    const cardNumber = document.getElementById("cardNumber").value.trim();
-    const expiry = document.getElementById("expiry").value;
-    const cvv = document.getElementById("cvv").value.trim();
 
-    if (name === "") {
-      alert("Please enter your name");
-      return;
-    }
+  let cartCount = document.getElementById("cart-count");
+  if (!cartCount) {
+    cartCount = document.createElement('span');
+    cartCount.id = "cart-count";
+    cartCount.style.cssText = `
+      background-color:red;
+      color:white;
+      border-radius:50%;
+      padding:2px 6px;
+      font-size:12px;
+      position:absolute;
+      top:0;
+      right:-10px;
+    `;
+    cartIcon.parentElement.style.position = "relative";
+    cartIcon.parentElement.appendChild(cartCount);
+  }
 
-    if (!/^\d{16}$/.test(cardNumber)) {
-      alert("Card number must be 16 digits");
-      return;
-    }
+  async function updateCartCount() {
+    const res = await fetch(`${API_URL}/cart`);
+    const cartItems = await res.json();
+    cartCount.innerText = cartItems.length;
+  }
 
-    if (!expiry) {
-      alert("Please select expiry date");
-      return;
-    }
+  updateCartCount();
 
-    if (!/^\d{3}$/.test(cvv)) {
-      alert("CVV must be 3 digits");
-      return;
-    }
+  cartButtons.forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const book = e.target.closest('.book');
+      const title = book.querySelector('h3').innerText;
+      const price = book.querySelector('.price').innerText.replace('₹','').trim();
+      const image = book.querySelector('img').src;
 
-    alert("Payment Successful ✅");
-    localStorage.removeItem("cartItems");
-    window.location.href = "success.html";
+      const cartRes = await fetch(`${API_URL}/cart`);
+      const cartItems = await cartRes.json();
+      const existing = cartItems.find(item => item.title === title);
+
+      if (!existing) {
+        await fetch(`${API_URL}/cart`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, price, image })
+        });
+        updateCartCount();
+        alert(`${title} added to cart 🛒`);
+      } else {
+        alert(`${title} is already in cart.`);
+      }
+    });
   });
 }
+
+// ------------------ INITIAL CALL ------------------
+loadBooks();

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wishlist | Book Mirage</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" />
+
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f9f5f0;
+      margin: 0;
+      color: #2e2e2e;
+    }
+
+    header {
+      background-color: #4b2e05;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 40px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 14px;
+      position: relative;
+    }
+
+    nav a:hover { color: #ffcc66; }
+
+    .wishlist-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 25px;
+      padding: 40px;
+    }
+
+    .wishlist-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .wishlist-card img {
+      width: 120px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .wishlist-card h4 {
+      margin: 10px 0 5px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .wishlist-card p {
+      color: #4b2e05;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .remove-btn {
+      border: none;
+      background: #d9534f;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .remove-btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Book Mirage</h1>
+  <nav>
+    <a href="index.html"><i class="fa fa-home"></i> Home</a>
+    <a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a>
+    <a href="wishlist.html"><i class="fa fa-heart"></i> Wishlist</a>
+  </nav>
+</header>
+
+<h2 style="text-align:center; margin-top:20px;">💖 Your Wishlist</h2>
+
+<div class="wishlist-container">
+  <!-- Wishlist books will be dynamically added here -->
+</div>
+
+<script>
+const API_URL = "http://localhost:3000";
+
+// ------------------ LOAD WISHLIST ------------------
+async function loadWishlist() {
+  try {
+    const res = await fetch(`${API_URL}/wishlist`);
+    const wishlist = await res.json();
+
+    const container = document.querySelector('.wishlist-container');
+    container.innerHTML = '';
+
+    if (wishlist.length === 0) {
+      container.innerHTML = '<p style="text-align:center; grid-column: 1 / -1;">Your wishlist is empty 😔</p>';
+      return;
+    }
+
+    wishlist.forEach(item => {
+      const card = document.createElement('div');
+      card.classList.add('wishlist-card');
+
+      card.innerHTML = `
+        <img src="${item.image}" alt="${item.title}">
+        <h4>${item.title}</h4>
+        <p>₹${item.price}</p>
+        <button class="remove-btn" data-id="${item.id}">Remove</button>
+      `;
+
+      container.appendChild(card);
+    });
+
+    attachRemoveEvents();
+
+  } catch (err) {
+    console.error("Error loading wishlist:", err);
+  }
+}
+
+// ------------------ REMOVE ITEM ------------------
+function attachRemoveEvents() {
+  document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-id');
+      await fetch(`${API_URL}/wishlist/${id}`, { method: "DELETE" });
+      loadWishlist(); // refresh wishlist
+    });
+  });
+}
+
+// ------------------ INIT ------------------
+loadWishlist();
+</script>
+
+</body>
+</html>
