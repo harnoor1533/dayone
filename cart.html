@@ -28,26 +28,41 @@
     <p>Loading your items...</p>
   </div>
 
-
-
   <script>
-    // bookstore.js (debug-friendly, DOMContentLoaded safe)
-// Drop this file in place of your existing bookstore.js
-
 (() => {
   const CART_KEY = 'bm_cart_v1';
 
-  // Wait until DOM is ready
+  // ✅ Define demo products
+  const PRODUCTS = [
+    {
+      id: "book-1",
+      title: "The Great Gatsby",
+      price: 499.00,
+      image: "https://m.media-amazon.com/images/I/81xXAy+2VfL._AC_UY327_FMwebp_QL65_.jpg"
+    },
+    {
+      id: "book-2",
+      title: "To Kill a Mockingbird",
+      price: 399.00,
+      image: "https://m.media-amazon.com/images/I/81OdwZ9SdfL._AC_UY327_FMwebp_QL65_.jpg"
+    },
+    {
+      id: "book-3",
+      title: "1984 by George Orwell",
+      price: 350.00,
+      image: "https://m.media-amazon.com/images/I/71kxa1-0mfL._AC_UY327_FMwebp_QL65_.jpg"
+    }
+  ];
+
   document.addEventListener('DOMContentLoaded', () => {
     console.log('[bookstore] DOMContentLoaded — starting init');
-    // obtain the container (do this here to avoid timing issues)
     const cartContainer = document.getElementById('cart-container');
     if (!cartContainer) {
       console.error('[bookstore] ERROR: could not find #cart-container in DOM');
       return;
     }
 
-    // Utility helpers
+    // Helpers
     function safeParse(s) {
       try { return JSON.parse(s); } catch (e) { return null; }
     }
@@ -61,14 +76,7 @@
       catch (e) { console.error('[bookstore] saveCart error', e); }
     }
 
-    // Demo products (you can replace images/prices)
-    const PRODUCTS = [
-      { id: 'book-1', title: 'The Alchemist', price: 199.00, image: 'https://via.placeholder.com/80?text=Alchemist' },
-      { id: 'book-2', title: 'Clean Code', price: 499.00, image: 'https://via.placeholder.com/80?text=Clean+Code' },
-      { id: 'book-3', title: "You Don't Know JS", price: 299.00, image: 'https://via.placeholder.com/80?text=YDKJS' }
-    ];
-
-    // Fallback seed if cart empty
+    // ✅ Seed demo data if empty
     function seedCartIfEmpty() {
       const cart = loadCart();
       if (Object.keys(cart).length === 0) {
@@ -79,7 +87,6 @@
       }
     }
 
-    // Basic helpers
     function formatNumber(n) {
       return Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
     }
@@ -88,7 +95,6 @@
       return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
-    // Cart ops
     function updateQty(id, qty) {
       const cart = loadCart();
       if (!cart[id]) return;
@@ -108,7 +114,6 @@
       renderCart();
     }
 
-    // Render cart UI (this MUST replace the "Loading your items..." text)
     function renderCart() {
       try {
         const cart = loadCart();
@@ -165,7 +170,6 @@
 
         cartContainer.innerHTML = html;
 
-        // wire events
         document.querySelectorAll('.remove-btn').forEach(btn =>
           btn.addEventListener('click', e => removeFromCart(e.currentTarget.dataset.id))
         );
@@ -189,7 +193,6 @@
       }
     }
 
-    // Build payload for server but do not call server yet
     function getCartItemsPayload() {
       const cart = loadCart();
       return Object.keys(cart).map(id => {
@@ -197,14 +200,13 @@
         return {
           id: it.id,
           title: it.title,
-          unit_price: Math.round(Number(it.price) * 100), // paise
+          unit_price: Math.round(Number(it.price) * 100),
           quantity: Number(it.qty || 1),
           image: it.image
         };
       });
     }
 
-    // Checkout handler (calls server endpoints you implement)
     async function onCheckoutClicked() {
       const usePaypal = document.getElementById('use-paypal')?.checked;
       const items = getCartItemsPayload();
@@ -255,7 +257,6 @@
       }
     }
 
-    // If you want to add items quickly from console: window.addToCart('book-1')
     function addToCartByProduct(productId, qty = 1) {
       const prod = PRODUCTS.find(p => p.id === productId);
       if (!prod) { console.warn('[bookstore] product not found', productId); return; }
@@ -266,27 +267,18 @@
       renderCart();
     }
 
-    // Initialize
+    // Init
     try {
       seedCartIfEmpty();
       renderCart();
-      // expose helpers for debugging in console
-      window.bm = {
-        loadCart,
-        saveCart,
-        renderCart,
-        addToCartByProduct,
-        clearCart,
-        getCartItemsPayload
-      };
+      window.bm = { loadCart, saveCart, renderCart, addToCartByProduct, clearCart, getCartItemsPayload };
       console.log('[bookstore] initialization complete');
     } catch (e) {
       console.error('[bookstore] initialization error', e);
       cartContainer.innerHTML = `<div style="color:red;padding:16px;">Initialization failed. See console.</div>`;
     }
-  }); // DOMContentLoaded
+  });
 })();
-
   </script>
 </body>
 </html>
