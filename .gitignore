@@ -1,0 +1,12 @@
+﻿# Node / npm
+node_modules/
+**/node_modules/
+
+# Vite build and frontend
+frontend/dist/
+frontend/node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
