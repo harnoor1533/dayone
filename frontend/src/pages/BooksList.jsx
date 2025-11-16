@@ -1,16 +1,31 @@
-﻿import React from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import BookCard from '../components/BookCard';
+
 export default function BooksList() {
-  const sample = [
-    { id: '1', title: 'Intro to React', price: 250 },
-    { id: '2', title: 'Learning JavaScript', price: 199 },
-  ];
+
+  const [books, setBooks] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:3000/books")  // Fetch from db.json
+      .then(res => res.json())
+      .then(data => setBooks(data))
+      .catch(err => console.error("Error fetching books:", err));
+  }, []);
+
   return (
     <div>
       <h2>Books List</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-        {sample.map(b => <BookCard key={b.id} book={b} />)}
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: 12
+      }}>
+        {books.map(b => (
+          <BookCard key={b.id} book={b} />
+        ))}
       </div>
     </div>
   );
 }
+
