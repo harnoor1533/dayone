@@ -76,14 +76,14 @@ async function setupWishlist() {
   hearts.forEach(heart => {
     heart.addEventListener('click', async () => {
       const bookDiv = heart.closest('.book');
-      const id = bookDiv.dataset.id;
+      const id = Number(bookDiv.dataset.id);
       const title = bookDiv.querySelector('h3').innerText;
-      const price = bookDiv.querySelector('.price').innerText.replace('₹','').trim();
+      const price = Number(bookDiv.querySelector('.price').innerText.replace('₹','').trim());
       const image = bookDiv.querySelector('img').src;
 
       const wishRes = await fetch(`${API_URL}/wishlist`);
       const wishlistData = await wishRes.json();
-      const exists = wishlistData.find(b => b.title === title);
+      const exists = wishlistData.find(b => b.id === id);
 
       if (exists) {
         // Remove from wishlist
@@ -141,18 +141,18 @@ async function setupCart() {
 
   updateCartCount();
 
-  // ✅ FIXED — use "button" instead of "e.target"
   cartButtons.forEach(button => {
     button.addEventListener('click', async () => {
       const book = button.closest('.book');
-      const id = book.dataset.id;
+
+      const id = Number(book.dataset.id);
       const title = book.querySelector('h3').innerText;
-      const price = book.querySelector('.price').innerText.replace('₹','').trim();
+      const price = Number(book.querySelector('.price').innerText.replace('₹','').trim());
       const image = book.querySelector('img').src;
 
       const cartRes = await fetch(`${API_URL}/cart`);
       const cartItems = await cartRes.json();
-      const existing = cartItems.find(item => item.title === title);
+      const existing = cartItems.find(item => item.id === id);
 
       if (!existing) {
         await fetch(`${API_URL}/cart`, {
@@ -168,6 +168,208 @@ async function setupCart() {
     });
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ------------------ INITIAL CALL ------------------
 loadBooks();

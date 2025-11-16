@@ -57,28 +57,8 @@
       "image": "himalayaa.jpg"
     }
   ],
-  "wishlist": [
-    {
-      "id": "096b",
-      "title": "How To Be Happy With Who You Are",
-      "price": "399",
-      "image": "http://127.0.0.1:5500/Front_page_-_sudha_murty.webp"
-    }
-  ],
-  "cart": [
-    {
-      "id": "3522",
-      "title": "How To Be Happy With Who You Are",
-      "price": "399",
-      "image": "http://127.0.0.1:5500/Front_page_-_sudha_murty.webp"
-    },
-    {
-      "id": "f5ca",
-      "title": "How Countries Go Broke The Big Cycle",
-      "price": "450",
-      "image": "http://127.0.0.1:5500/how%20countries%20go.webp"
-    }
-  ],
+  "wishlist": [],
+  "cart": [],
   "users": [
     {
       "id": "1",
