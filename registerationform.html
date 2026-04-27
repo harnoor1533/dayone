@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(to right, #8b5e3c, #d7b89c);
+    }
+    .form-box {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      width: 300px;
+    }
+    .form-box h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-box input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .form-box button {
+      width: 100%;
+      padding: 10px;
+      background: #8b5e3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .form-box button:hover {
+      background: #8b5e3c;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-box">
+    <h2>Register</h2>
+    <form action="bookstore.html" method="get">
+      <input type="text" name="name" placeholder="Enter Name" required>
+      <input type="email" name="email" placeholder="Enter Email" required>
+      <input type="tel" name="phone" placeholder="Enter Phone No." required>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Your Cart - Book Mirage</title>
+  <link rel="stylesheet" href="Bookstore.css" />
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background: #f9f9f9; margin: 0; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; }
+    .cart-container { max-width: 900px; margin: auto; background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 14px 0; gap: 12px; }
+    .cart-item img { width: 80px; height: auto; border-radius: 5px; object-fit: cover; }
+    .cart-item h3 { font-size: 16px; margin: 0 0 6px 0; }
+    .total { text-align: right; font-size: 18px; margin-top: 20px; font-weight: bold; }
+    button { background-color: #ff4d4d; color: white; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; }
+    button.remove-btn { background-color: #777; }
+    button:hover { filter: brightness(0.95); }
+    .empty { text-align:center; padding: 40px 0; }
+    a.continue { color: #ff4d4d; text-decoration: none; font-weight: 600; }
+    .qty { width: 48px; padding: 6px; border-radius:6px; border:1px solid #ccc; text-align:center; }
+    .checkout-row { display:flex; justify-content:space-between; align-items:center; margin-top:16px; gap:12px; }
+    .checkout-left { display:flex; gap:10px; align-items:center; }
+  </style>
+</head>
+<body>
+  <h1>🛒 Your Cart</h1>
+  <div class="cart-container" id="cart-container">
+    <p>Loading your items...</p>
+  </div>
+
+  <script>
+(() => {
+  const CART_KEY = 'bm_cart_v1';
+
+  // ✅ Define demo products
+  const PRODUCTS = [
+    {
+      id: "book-1",
+      title: "The Great Gatsby",
+      price: 499.00,
+      image: "https://m.media-amazon.com/images/I/81xXAy+2VfL._AC_UY327_FMwebp_QL65_.jpg"
+    },
+    {
+      id: "book-2",
+      title: "To Kill a Mockingbird",
+      price: 399.00,
+      image: "https://m.media-amazon.com/images/I/81OdwZ9SdfL._AC_UY327_FMwebp_QL65_.jpg"
+    },
+    {
+      id: "book-3",
+      title: "1984 by George Orwell",
+      price: 350.00,
+      image: "https://m.media-amazon.com/images/I/71kxa1-0mfL._AC_UY327_FMwebp_QL65_.jpg"
+    }
+  ];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[bookstore] DOMContentLoaded — starting init');
+    const cartContainer = document.getElementById('cart-container');
+    if (!cartContainer) {
+      console.error('[bookstore] ERROR: could not find #cart-container in DOM');
+      return;
+    }
+
+    // Helpers
+    function safeParse(s) {
+      try { return JSON.parse(s); } catch (e) { return null; }
+    }
+    function loadCart() {
+      const raw = localStorage.getItem(CART_KEY);
+      const parsed = safeParse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    }
+    function saveCart(cart) {
+      try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
+      catch (e) { console.error('[bookstore] saveCart error', e); }
+    }
+
+    // ✅ Seed demo data if empty
+    function seedCartIfEmpty() {
+      const cart = loadCart();
+      if (Object.keys(cart).length === 0) {
+        cart[PRODUCTS[0].id] = { ...PRODUCTS[0], qty: 1 };
+        cart[PRODUCTS[1].id] = { ...PRODUCTS[1], qty: 2 };
+        saveCart(cart);
+        console.log('[bookstore] seeded demo cart');
+      }
+    }
+
+    function formatNumber(n) {
+      return Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+    }
+    function escapeHtml(s) {
+      if (typeof s !== 'string') return s;
+      return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function updateQty(id, qty) {
+      const cart = loadCart();
+      if (!cart[id]) return;
+      cart[id].qty = qty;
+      if (cart[id].qty <= 0) delete cart[id];
+      saveCart(cart);
+      renderCart();
+    }
+    function removeFromCart(id) {
+      const cart = loadCart();
+      if (cart[id]) delete cart[id];
+      saveCart(cart);
+      renderCart();
+    }
+    function clearCart() {
+      localStorage.removeItem(CART_KEY);
+      renderCart();
+    }
+
+    function renderCart() {
+      try {
+        const cart = loadCart();
+        const keys = Object.keys(cart);
+        if (keys.length === 0) {
+          cartContainer.innerHTML = `
+            <div class="empty">
+              <p>Your cart is empty.</p>
+              <a class="continue" href="#">Continue shopping</a>
+            </div>`;
+          console.log('[bookstore] rendered empty cart');
+          return;
+        }
+
+        let html = '';
+        let total = 0;
+        html += '<div id="cart-list">';
+        keys.forEach(id => {
+          const item = cart[id];
+          const itemTotal = item.price * item.qty;
+          total += itemTotal;
+          html += `
+            <div class="cart-item" data-id="${escapeHtml(id)}">
+              <div style="display:flex; gap:12px; align-items:center;">
+                <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" />
+                <div>
+                  <h3>${escapeHtml(item.title)}</h3>
+                  <div>₹ ${formatNumber(item.price)} x 
+                    <input class="qty" type="number" min="1" value="${item.qty}" data-id="${escapeHtml(id)}" />
+                  </div>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <div>₹ ${formatNumber(itemTotal)}</div>
+                <div style="margin-top:8px;">
+                  <button class="remove-btn" data-id="${escapeHtml(id)}">Remove</button>
+                </div>
+              </div>
+            </div>`;
+        });
+        html += '</div>';
+
+        html += `
+          <div class="total">Total: ₹ ${formatNumber(total)}</div>
+          <div class="checkout-row">
+            <div class="checkout-left">
+              <label><input id="use-paypal" type="checkbox"> Use PayPal (alternative)</label>
+            </div>
+            <div>
+              <button id="checkout-btn">Pay Now</button>
+              <button id="clear-cart-btn" style="margin-left:8px;background:#777;">Clear</button>
+            </div>
+          </div>`;
+
+        cartContainer.innerHTML = html;
+
+        document.querySelectorAll('.remove-btn').forEach(btn =>
+          btn.addEventListener('click', e => removeFromCart(e.currentTarget.dataset.id))
+        );
+        document.querySelectorAll('.qty').forEach(inp =>
+          inp.addEventListener('change', e => {
+            const id = e.currentTarget.dataset.id;
+            let q = parseInt(e.currentTarget.value, 10);
+            if (isNaN(q) || q < 1) q = 1;
+            updateQty(id, q);
+          })
+        );
+        const checkoutBtn = document.getElementById('checkout-btn');
+        if (checkoutBtn) checkoutBtn.addEventListener('click', onCheckoutClicked);
+        const clearBtn = document.getElementById('clear-cart-btn');
+        if (clearBtn) clearBtn.addEventListener('click', clearCart);
+
+        console.log('[bookstore] rendered cart with', keys.length, 'items; total:', total);
+      } catch (err) {
+        console.error('[bookstore] renderCart error:', err);
+        cartContainer.innerHTML = `<div style="color:red;padding:16px;">Error loading cart. See console for details.</div>`;
+      }
+    }
+
+    function getCartItemsPayload() {
+      const cart = loadCart();
+      return Object.keys(cart).map(id => {
+        const it = cart[id];
+        return {
+          id: it.id,
+          title: it.title,
+          unit_price: Math.round(Number(it.price) * 100),
+          quantity: Number(it.qty || 1),
+          image: it.image
+        };
+      });
+    }
+
+    async function onCheckoutClicked() {
+      const usePaypal = document.getElementById('use-paypal')?.checked;
+      const items = getCartItemsPayload();
+      if (items.length === 0) {
+        alert('Your cart is empty.');
+        return;
+      }
+
+      try {
+        const checkoutBtn = document.getElementById('checkout-btn');
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Please wait...';
+
+        const endpoint = usePaypal ? '/create-paypal-order' : '/create-checkout-session';
+        console.log('[bookstore] requesting', endpoint, 'with items:', items);
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items })
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error('Server responded with ' + res.status + ' — ' + txt);
+        }
+        const data = await res.json();
+        console.log('[bookstore] server response:', data);
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else if (data.sessionId && typeof Stripe === 'function') {
+          const stripe = Stripe(window.STRIPE_PUBLISHABLE_KEY || '');
+          const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+          if (error) throw error;
+        } else {
+          throw new Error('Invalid response from server');
+        }
+      } catch (err) {
+        console.error('[bookstore] checkout error:', err);
+        alert('Checkout failed: ' + (err.message || err));
+      } finally {
+        const checkoutBtn = document.getElementById('checkout-btn');
+        if (checkoutBtn) {
+          checkoutBtn.disabled = false;
+          checkoutBtn.textContent = 'Pay Now';
+        }
+      }
+    }
+
+    function addToCartByProduct(productId, qty = 1) {
+      const prod = PRODUCTS.find(p => p.id === productId);
+      if (!prod) { console.warn('[bookstore] product not found', productId); return; }
+      const cart = loadCart();
+      if (cart[productId]) cart[productId].qty = (cart[productId].qty || 0) + qty;
+      else cart[productId] = { ...prod, qty };
+      saveCart(cart);
+      renderCart();
+    }
+
+    // Init
+    try {
+      seedCartIfEmpty();
+      renderCart();
+      window.bm = { loadCart, saveCart, renderCart, addToCartByProduct, clearCart, getCartItemsPayload };
+      console.log('[bookstore] initialization complete');
+    } catch (e) {
+      console.error('[bookstore] initialization error', e);
+      cartContainer.innerHTML = `<div style="color:red;padding:16px;">Initialization failed. See console.</div>`;
+    }
+  });
+})();
+  </script>
+</body>
+</html>

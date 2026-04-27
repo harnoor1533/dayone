@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Mirage</title>
+  <link rel="stylesheet" href="Bookstore.css">
+ 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+<header class="top-bar">
+  <div class="logo"><img src="logo main.png"></div>
+
+  <div class="search-bar">
+    <input type="text" placeholder="Search for books...">
+    <button><i class="fas fa-search"></i></button>
+  </div>
+
+  <div class="icons">
+    <div class="icon">
+      <a href="login.html"><i class="fas fa-user"></i><small>user</small></a>
+    </div>
+    <div class="icon">
+      <a href="wishlist.html">
+        <i class="fa fa-heart" id="whishlist-icon"></i>
+        <small>wishlist</small>
+      </a>
+    </div>
+    <div class="icon">
+      <a href="cart.html">
+        <i class="fas fa-shopping-cart"></i>
+        <small>cart</small>
+      </a>
+    </div>
+  </div>
+</header>
+
+<nav class="navbar">
+  <ul>
+    <div class="dropdown">
+      <li><a href="#">Book ▾</a></li>
+      <div class="dropdown-content">
+        <a href="#">Art, Film & Photography</a>
+        <a href="#">Language & Creative Writing</a>
+        <a href="#">Biographies & Memoire</a>
+        <a href="#">Fiction & Literature</a>
+        <a href="#">Business & Economics</a>
+        <a href="#">Science & Environment</a>
+      </div>
+    </div>
+    <li><a href="#">Top 50</a></li>
+    <li><a href="#">Kids Books</a></li>
+    <li><a href="#">Stationery & Gifts</a></li>
+    <li><a href="#">Exclusive</a></li>
+    <li><a href="#">Gift Cards</a></li>
+  </ul>
+</nav>
+
+<section class="hero-banner">
+  <div class="banner-text">
+    <h1>📖 End of Season Sale</h1>
+    <p>Get up to 30% OFF on Best Sellers</p>
+  </div>
+</section>
+
+<div class="container" id="book-container"></div>
+
+<!-- Coupon Section -->
+<div class="coupon-box">
+  <h2>🎟 Apply Coupon</h2>
+  <input type="text" id="coupon" placeholder="Enter coupon code">
+  <button onclick="applyCoupon()">Apply</button>
+  <p id="coupon-msg"></p>
+</div>
+
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-section">
+      <h3>📚 Book Mirage</h3>
+      <p>Your one-stop destination for bestsellers and stationery.</p>
+    </div>
+    <div class="footer-section">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">All Books</a></li>
+        <li><a href="#">Top 50</a></li>
+        <li><a href="#">Gift Cards</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Book Mirage | All Rights Reserved</p>
+  </div>
+</footer>
+
+<script>
+/* ---------------- CONSTANTS ---------------- */
+const API_URL = "http://localhost:3000";
+const CART_KEY = "bm_cart_v1";
+
+/* ---------------- FETCH & RENDER BOOKS ---------------- */
+async function fetchBooks() {
+  try {
+    const res = await fetch(`${API_URL}/books`);
+    const books = await res.json();
+    const container = document.getElementById("book-container");
+    container.innerHTML = "";
+
+    books.forEach(book => {
+      const div = document.createElement("div");
+      div.classList.add("book");
+      div.innerHTML = `
+        <div class="whishlist-icon"><i class="fas fa-heart"></i></div>
+        <img src="${book.image}" alt="${book.title}">
+        <h3>${book.title}</h3>
+        <h4>by ${book.author}</h4>
+        <p><span class="discount">₹${book.price + 100}</span> 
+           <span class="price">₹${book.price}</span>
+        </p>
+
+        <button class="add-cart"
+            data-id="${book.id}"
+            data-title="${book.title}"
+            data-price="${book.price}"
+            data-image="${book.image}">
+          <i class="fas fa-cart-plus"></i> Add to Cart
+        </button>
+      `;
+      container.appendChild(div);
+    });
+
+    attachCartListeners();
+    attachWishlistListeners();
+
+  } catch (err) {
+    console.error("Error loading books:", err);
+  }
+}
+
+/* ---------------- ADD TO CART LOGIC ---------------- */
+function attachCartListeners() {
+  document.querySelectorAll(".add-cart").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      const title = btn.dataset.title;
+      const price = Number(btn.dataset.price);
+      const image = btn.dataset.image;
+
+      let cart = JSON.parse(localStorage.getItem(CART_KEY)) || {};
+
+      if (cart[id]) {
+        cart[id].qty += 1;
+      } else {
+        cart[id] = { id, title, price, image, qty: 1 };
+      }
+
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      alert("Book added to cart successfully!");
+    });
+  });
+}
+
+/* ---------------- WISHLIST LISTENERS (unchanged) ---------------- */
+function attachWishlistListeners() {
+  const hearts = document.querySelectorAll('.whishlist-icon i');
+  const wishlistIcon = document.getElementById('whishlist-icon');
+
+  let wishlistCount = document.getElementById("wishlist-count");
+  if (!wishlistCount) {
+    wishlistCount = document.createElement('span');
+    wishlistCount.id = "wishlist-count";
+    wishlistCount.style = `
+      background-color:red;color:white;border-radius:50%;
+      padding:2px 6px;font-size:12px;position:absolute;top:0;right:-10px;
+    `;
+    wishlistIcon.parentElement.style.position = "relative";
+    wishlistIcon.parentElement.appendChild(wishlistCount);
+  }
+
+  fetch(`${API_URL}/wishlist`)
+    .then(res => res.json())
+    .then(data => {
+      wishlistCount.innerText = data.length;
+      hearts.forEach(heart => {
+        const bookDiv = heart.closest('.book');
+        const title = bookDiv.querySelector('h3').innerText;
+        if (data.some(b => b.title === title)) {
+          heart.style.color = 'red';
+        }
+      });
+    });
+
+  hearts.forEach(heart => {
+    heart.addEventListener('click', async () => {
+      const bookDiv = heart.closest('.book');
+      const title = bookDiv.querySelector('h3').innerText;
+      const price = bookDiv.querySelector('.price').innerText.replace('₹', '');
+      const image = bookDiv.querySelector('img').src;
+
+      if (heart.style.color === 'red') {
+        heart.style.color = 'gray';
+
+        const res = await fetch(`${API_URL}/wishlist`);
+        const list = await res.json();
+        const item = list.find(b => b.title === title);
+
+        if (item) await fetch(`${API_URL}/wishlist/${item.id}`, { method: "DELETE" });
+      } else {
+        heart.style.color = 'red';
+
+        await fetch(`${API_URL}/wishlist`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, price, image })
+        });
+      }
+
+      const res2 = await fetch(`${API_URL}/wishlist`);
+      const updated = await res2.json();
+      wishlistCount.innerText = updated.length;
+    });
+  });
+}
+
+/* ---------------- INIT ---------------- */
+fetchBooks();
+</script>
+<script src="script.js"></script>
+
+</body>
+</html>

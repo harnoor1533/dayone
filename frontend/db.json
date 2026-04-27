@@ -59,7 +59,6 @@
   ],
   "wishlist": [
     {
-<<<<<<< HEAD
       "id": "096b",
       "title": "How To Be Happy With Who You Are",
       "price": "399",
@@ -86,21 +85,6 @@
       "image": "http://127.0.0.1:5500/how%20countries%20go.webp"
     }
   ],
-=======
-      "id": "aae6",
-      "title": "It's Okay",
-      "price": "349",
-      "image": "http://127.0.0.1:5500/its%20oaky"
-    },
-    {
-      "id": "c5ae",
-      "title": "Human Edge In The AI Age: Eight Timeless Mantras For Success",
-      "price": "499",
-      "image": "http://127.0.0.1:5500/human%20edge.webp"
-    }
-  ],
-  "cart": [],
->>>>>>> 80895245703e3c75669894e670a16b6acc1ef66a
   "users": [
     {
       "id": "1",

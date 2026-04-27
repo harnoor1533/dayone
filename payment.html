@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Payment - Book Mirage</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Link to your existing CSS (bookstore.css) -->
+  <link rel="stylesheet" href="bookstore.css" />
+  <style>
+    /* Small overrides so this page looks good with bookstore.css */
+    :root { --accent: #ff4d4d; --muted:#666; --card:#fff; --bg:#f7f7f9; --radius:12px; }
+    body { background: var(--bg); font-family: Inter, Arial, sans-serif; margin: 0; color: #111; }
+    .wrap { max-width: 1100px; margin: 28px auto; padding: 18px; }
+    header.top-bar { display:flex; align-items:center; gap:12px; padding:10px 0; }
+    header .logo img { height:36px; }
+    h1 { margin: 8px 0 18px; font-size:20px; }
+    .grid { display:grid; grid-template-columns: 1fr 420px; gap:22px; }
+    .panel { background: var(--card); border-radius: var(--radius); padding:16px; box-shadow: 0 8px 26px rgba(11,22,40,0.06); }
+    .cart-items { display:flex; flex-direction:column; gap:12px; max-height:540px; overflow:auto; padding-right:6px; }
+    .cart-item { display:flex; gap:12px; align-items:center; border-radius:10px; padding:10px; border: 1px solid #f0f0f0; }
+    .cart-item img { width:72px; height:96px; object-fit:cover; border-radius:6px; }
+    .cart-meta h3 { margin:0; font-size:15px; }
+    .price { color: var(--accent); font-weight:600; margin-top:6px; }
+    .qty-row { display:flex; gap:8px; align-items:center; margin-top:8px; }
+    input[type=number], input[type=text], input[type=tel], input[type=month], textarea { padding:8px; border-radius:8px; border:1px solid #ddd; width:100%; }
+    textarea { resize:vertical; min-height:64px; }
+    .remove-btn { background:#eee; border:0; padding:6px 8px; border-radius:8px; cursor:pointer; }
+    .summary h2 { margin:0 0 12px; }
+    .line { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #eee; }
+    .total-row { display:flex; justify-content:space-between; font-weight:700; font-size:18px; padding-top:12px; }
+    .form-row { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+    label { font-size:13px; color: var(--muted); }
+    .primary { background: var(--accent); color:#fff; border:0; padding:12px 16px; border-radius:10px; cursor:pointer; width:100%; font-weight:600; }
+    .secondary { background:#fff; border:1px solid #ddd; padding:10px; border-radius:8px; cursor:pointer; }
+    .small { font-size:13px; color:var(--muted); }
+    .radio-row { display:flex; gap:12px; align-items:center; margin-top:8px; }
+    #card-block { transition: 0.15s ease; }
+    .error { color:#b00020; margin-top:10px; display:none; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .summary { order: 2; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- NAVBAR - taken from bookstore.html (edit if you have a different header) -->
+    <header class="top-bar">
+      <div class="logo"><img src="logo main.png" alt="logo" /></div>
+      <div style="flex:1"></div>
+      <nav style="display:flex; gap:12px; align-items:center">
+        <a href="index.html" class="small">Home</a>
+        <a href="cart.html" class="small">Back to Cart</a>
+        <a href="login.html" class="small">Login</a>
+      </nav>
+    </header>
+
+    <h1>Complete payment</h1>
+
+    <div class="grid">
+      <!-- LEFT: cart items -->
+      <div class="panel">
+        <h2>Your items</h2>
+        <div id="cart-items" class="cart-items">
+          <div class="small">Loading your cart...</div>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <button id="continueShopping" class="secondary">Continue shopping</button>
+          <button id="clearBtn" class="secondary">Clear cart</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: summary + payment form -->
+      <aside class="panel summary">
+        <h2>Order summary</h2>
+
+        <div id="summary-lines">
+          <!-- injected -->
+        </div>
+
+        <div class="total-row" style="margin-top:8px">
+          <div>Total</div>
+          <div id="grand-total">₹ 0.00</div>
+        </div>
+
+        <!-- Payment form -->
+        <form id="paymentForm" novalidate>
+          <!-- Contact details -->
+          <div class="form-row">
+            <label for="name">Full name</label>
+            <input id="name" type="text" placeholder="Full name" />
+          </div>
+
+          <div class="form-row">
+            <label for="phone">Phone number</label>
+            <input id="phone" type="tel" placeholder="10-digit phone number" />
+          </div>
+
+          <div class="form-row">
+            <label for="address">Full address</label>
+            <textarea id="address" placeholder="House no, street, landmark, city, state, pincode"></textarea>
+          </div>
+
+          <!-- Payment method -->
+          <div class="form-row">
+            <label>Payment method</label>
+            <div class="radio-row">
+              <label><input type="radio" name="paymethod" value="cod" checked> Cash on Delivery (COD)</label>
+              <label><input type="radio" name="paymethod" value="card"> Card (test only)</label>
+            </div>
+          </div>
+
+          <!-- Card block (hidden when COD selected) -->
+          <div id="card-block">
+            <div class="form-row">
+              <label for="cardNumber">Card number (test)</label>
+              <input id="cardNumber" type="text" inputmode="numeric" maxlength="19" placeholder="4242 4242 4242 4242" />
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <div style="flex:1">
+                <label for="expiry">Expiry</label>
+                <input id="expiry" type="month" />
+              </div>
+              <div style="width:120px">
+                <label for="cvv">CVV</label>
+                <input id="cvv" type="password" maxlength="4" placeholder="123" />
+              </div>
+            </div>
+          </div>
+
+          <div id="error" class="error"></div>
+
+          <button class="primary" type="submit" id="payBtn">Place order</button>
+        </form>
+
+        <div style="margin-top:10px; font-size:13px; color:var(--muted)">
+          <strong>Notes:</strong> Card flow here is demo-only — no real charges. For live payments integrate Stripe/PayPal on server.
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+  /* payment page JS
+     - reads cart from localStorage key "cartItems"
+     - renders items with qty + remove
+     - validates name, phone, address
+     - supports COD (no card inputs shown) and Card (test) option
+     - on success clears cart and redirects to success.html
+  */
+  (function () {
+    const CART_KEY = "cartItems";
+    const V = id => document.getElementById(id);
+    const cartItemsEl = V("cart-items");
+    const summaryLinesEl = V("summary-lines");
+    const grandTotalEl = V("grand-total");
+    const errorEl = V("error");
+    const payBtn = V("payBtn");
+    const cardBlock = V("card-block");
+
+    // load cart from localStorage and normalize
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem(CART_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return arr.map(item => ({
+          title: item.title || "Untitled",
+          price: Number(String(item.price || 0).replace(/[^\d.]/g, "")) || 0,
+          image: item.image || "",
+          qty: item.qty && Number(item.qty) > 0 ? Number(item.qty) : 1
+        }));
+      } catch (e) {
+        console.error("parse cart failed", e);
+        return [];
+      }
+    }
+
+    let cart = loadCart();
+
+    function saveCart() {
+      const toSave = cart.map(it => ({ title: it.title, price: String(it.price), image: it.image, qty: it.qty }));
+      localStorage.setItem(CART_KEY, JSON.stringify(toSave));
+    }
+
+    function formatINR(n) {
+      return "₹ " + Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function escapeHtml(s) {
+      if (!s) return "";
+      return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    function renderCart() {
+      cartItemsEl.innerHTML = "";
+      if (!cart.length) {
+        cartItemsEl.innerHTML = '<div class="small">Your cart is empty. <a href="index.html">Continue shopping</a></div>';
+        summaryLinesEl.innerHTML = "";
+        grandTotalEl.textContent = formatINR(0);
+        return;
+      }
+
+      let subtotal = 0;
+      cart.forEach((it, idx) => {
+        const itemTotal = it.price * it.qty;
+        subtotal += itemTotal;
+
+        const itemEl = document.createElement("div");
+        itemEl.className = "cart-item";
+        itemEl.innerHTML = `
+          <img src="${escapeHtml(it.image)}" alt="${escapeHtml(it.title)}" />
+          <div class="cart-meta">
+            <h3>${escapeHtml(it.title)}</h3>
+            <div class="price">${formatINR(it.price)} each</div>
+            <div class="qty-row">
+              <label class="small">Qty</label>
+              <input type="number" min="1" value="${it.qty}" data-idx="${idx}" />
+              <button class="remove-btn" data-idx="${idx}">Remove</button>
+            </div>
+          </div>
+          <div style="text-align:right; min-width:110px">
+            <div style="font-weight:600">${formatINR(itemTotal)}</div>
+          </div>
+        `;
+        cartItemsEl.appendChild(itemEl);
+      });
+
+      const gst = Math.round(subtotal * 0.18 * 100) / 100;
+      const shipping = 0;
+      const grand = Math.round((subtotal + gst + shipping) * 100) / 100;
+
+      summaryLinesEl.innerHTML = `
+        <div class="line"><div>Subtotal</div><div>${formatINR(subtotal)}</div></div>
+        <div class="line"><div>GST (18%)</div><div>${formatINR(gst)}</div></div>
+        <div class="line"><div>Shipping</div><div>${formatINR(shipping)}</div></div>
+      `;
+      grandTotalEl.textContent = formatINR(grand);
+
+      // wire up qty and remove
+      cartItemsEl.querySelectorAll('input[type="number"]').forEach(inp => {
+        inp.addEventListener("change", e => {
+          const idx = Number(e.currentTarget.dataset.idx);
+          let val = parseInt(e.currentTarget.value, 10);
+          if (isNaN(val) || val < 1) val = 1;
+          cart[idx].qty = val;
+          saveCart();
+          renderCart();
+        });
+      });
+      cartItemsEl.querySelectorAll(".remove-btn").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const idx = Number(e.currentTarget.dataset.idx);
+          cart.splice(idx, 1);
+          saveCart();
+          renderCart();
+        });
+      });
+    }
+
+    // toggle card inputs depending on payment method
+    function initPaymentMethodToggle() {
+      const radios = document.querySelectorAll('input[name="paymethod"]');
+      radios.forEach(r => r.addEventListener("change", () => {
+        const v = document.querySelector('input[name="paymethod"]:checked').value;
+        if (v === "cod") {
+          cardBlock.style.display = "none";
+        } else {
+          cardBlock.style.display = "block";
+        }
+      }));
+      // apply initial state
+      const initial = document.querySelector('input[name="paymethod"]:checked').value;
+      cardBlock.style.display = initial === "cod" ? "none" : "block";
+    }
+
+    function showError(msg) {
+      errorEl.style.display = "block";
+      errorEl.textContent = msg;
+    }
+    function hideError() {
+      errorEl.style.display = "none";
+      errorEl.textContent = "";
+    }
+
+    function validateForm() {
+      hideError();
+      const name = V("name").value.trim();
+      const phone = V("phone").value.trim();
+      const address = V("address").value.trim();
+      const paymethod = document.querySelector('input[name="paymethod"]:checked')?.value || "cod";
+
+      // basic validations
+      if (!name) { showError("Please enter your full name."); return false; }
+      if (!phone) { showError("Please enter phone number."); return false; }
+      // phone basic check: 10 digits (India)
+      if (!/^\d{10}$/.test(phone)) { showError("Enter a valid 10-digit phone number."); return false; }
+      if (!address || address.length < 6) { showError("Please enter your full address."); return false; }
+
+      if (cart.length === 0) { showError("Your cart is empty — add items before placing order."); return false; }
+
+      if (paymethod === "card") {
+        // demo card validation (do not collect real cards in production)
+        const cardNumberRaw = V("cardNumber").value.replace(/\s+/g, "");
+        const expiry = V("expiry").value;
+        const cvv = V("cvv").value.trim();
+
+        if (!/^\d{16}$/.test(cardNumberRaw)) { showError("Card number must be 16 digits (test mode)."); return false; }
+        if (!expiry) { showError("Please select card expiry."); return false; }
+        // expiry must be future month
+        try {
+          const [y, m] = expiry.split("-");
+          const exp = new Date(Number(y), Number(m) - 1 + 1, 1);
+          if (!(exp > new Date())) { showError("Card expiry must be in the future."); return false; }
+        } catch (e) {
+          showError("Invalid expiry date."); return false;
+        }
+        if (!/^\d{3,4}$/.test(cvv)) { showError("CVV must be 3 or 4 digits."); return false; }
+      }
+
+      return true;
+    }
+
+    // handle submit
+    function handleSubmit(e) {
+      e.preventDefault();
+      if (!validateForm()) return;
+
+      // simulate processing
+      payBtn.disabled = true;
+      payBtn.textContent = "Processing...";
+
+      setTimeout(() => {
+        // save order info (optional) - could be posted to server
+        const order = {
+          contact: {
+            name: V("name").value.trim(),
+            phone: V("phone").value.trim(),
+            address: V("address").value.trim()
+          },
+          items: cart,
+          total: grandTotalEl.textContent,
+          paymentMethod: document.querySelector('input[name="paymethod"]:checked').value
+        };
+        // store order to localStorage for demo or analytics (optional)
+        try {
+          localStorage.setItem("lastOrder", JSON.stringify(order));
+        } catch (e) { /* ignore */ }
+
+        // clear cart and redirect to success
+        localStorage.removeItem(CART_KEY);
+        window.location.href = "success.html";
+      }, 900);
+    }
+
+    // Init
+    function init() {
+      renderCart();
+      initPaymentMethodToggle();
+
+      // events
+      V("paymentForm").addEventListener("submit", handleSubmit);
+      V("continueShopping").addEventListener("click", () => window.location.href = "index.html");
+      V("clearBtn").addEventListener("click", () => {
+        if (!confirm("Clear cart?")) return;
+        cart = [];
+        saveCart();
+        renderCart();
+      });
+    }
+
+    init();
+  })();
+  </script>
+</body>
+</html>
