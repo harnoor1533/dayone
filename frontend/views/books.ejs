@@ -1,0 +1,9 @@
+<h1>📚 Books (SSR)</h1>
+
+<% books.forEach(book => { %>
+  <div>
+    <h3><%= book.title %></h3>
+    <p>Author: <%= book.author %></p>
+    <p>Price: ₹<%= book.price %></p>
+  </div>
+<% }) %>

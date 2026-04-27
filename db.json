@@ -57,7 +57,20 @@
       "image": "himalayaa.jpg"
     }
   ],
-  "wishlist": [],
+  "wishlist": [
+    {
+      "id": "aae6",
+      "title": "It's Okay",
+      "price": "349",
+      "image": "http://127.0.0.1:5500/its%20oaky"
+    },
+    {
+      "id": "c5ae",
+      "title": "Human Edge In The AI Age: Eight Timeless Mantras For Success",
+      "price": "499",
+      "image": "http://127.0.0.1:5500/human%20edge.webp"
+    }
+  ],
   "cart": [],
   "users": [
     {

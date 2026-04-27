@@ -1,28 +1,36 @@
 ﻿import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import HomePage from './pages/HomePage';
-import BooksList from './pages/BooksList';
-import AddBook from './pages/AddBook';
-import EditBook from './pages/EditBook';
-import Contact from './pages/Contact';
+import { useQuery, gql } from '@apollo/client';
 
-export default function App() {
+const GET_BOOKS = gql`
+  query {
+    books {
+      id
+      title
+      author
+      price
+      image
+    }
+  }
+`;
+
+export default function BooksList() {
+  const { data, loading, error } = useQuery(GET_BOOKS);
+
+  if (loading) return <p>Loading books...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  const books = data?.books ?? [];
+
   return (
-    <>
-      <Navbar />
-      <main style={{ padding: 20, minHeight: '70vh' }}>
-        <Routes>
-          <Route path='/' element={<HomePage />} />
-          <Route path='/books' element={<BooksList />} />
-          <Route path='/add' element={<AddBook />} />
-          <Route path='/edit/:id' element={<EditBook />} />
-          <Route path='/contact' element={<Contact />} />
-          <Route path='*' element={<div><h2>404 — Page not found</h2></div>} />
-        </Routes>
-      </main>
-      <Footer />
-    </>
+    <div className="books-list">
+      {books.length === 0 ? <p>No books found</p> : books.map((book) => (
+        <div key={book.id} className="book-card">
+          <img src={book.image} alt={book.title} width="150" />
+          <h3>{book.title}</h3>
+          <p>{book.author}</p>
+          <p>${book.price}</p>
+        </div>
+      ))}
+    </div>
   );
 }
