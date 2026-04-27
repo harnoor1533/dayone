@@ -1,0 +1,95 @@
+{
+  "books": [
+    {
+      "id": "3",
+      "title": "How To Be Happy With Who You Are",
+      "author": "Sudha Murty",
+      "price": 399,
+      "image": "Front_page_-_sudha_murty.webp"
+    },
+    {
+      "id": "4",
+      "title": "It's Okay",
+      "author": "Jaya Kishori",
+      "price": 349,
+      "image": "its oaky"
+    },
+    {
+      "id": "5",
+      "title": "Human Edge In The AI Age: Eight Timeless Mantras For Success",
+      "author": "Nitin Seth",
+      "price": 499,
+      "image": "human edge.webp"
+    },
+    {
+      "id": "6",
+      "title": "How To Hold Someone In Your Heart",
+      "author": "Mizuki Tsujimura Yuki Tejma",
+      "price": 599,
+      "image": "hold by someone.webp"
+    },
+    {
+      "id": "7",
+      "title": "Heart Lamp: Selected Stories | Winner of The International Booker Prize 2025",
+      "author": "Various Authors",
+      "price": 400,
+      "image": "heart lamp.webp"
+    },
+    {
+      "id": "8",
+      "title": "Different, But No Less: The Unscripted Story Behind The Making Of Tanvi The Great (Hb)",
+      "author": "Various Authors",
+      "price": 450,
+      "image": "different but not less.webp"
+    },
+    {
+      "id": "9",
+      "title": "How Countries Go Broke The Big Cycle",
+      "author": "Ray Dalio",
+      "price": 450,
+      "image": "how countries go.webp"
+    },
+    {
+      "id": "10",
+      "title": "Himalaya",
+      "author": "Michael Palin",
+      "price": 450,
+      "image": "himalayaa.jpg"
+    }
+  ],
+  "wishlist": [
+    {
+      "id": "096b",
+      "title": "How To Be Happy With Who You Are",
+      "price": "399",
+      "image": "http://127.0.0.1:5500/Front_page_-_sudha_murty.webp"
+    },
+    {
+      "id": "7710",
+      "title": "It's Okay",
+      "price": "349",
+      "image": "http://127.0.0.1:5500/its%20oaky"
+    }
+  ],
+  "cart": [
+    {
+      "id": "3522",
+      "title": "How To Be Happy With Who You Are",
+      "price": "399",
+      "image": "http://127.0.0.1:5500/Front_page_-_sudha_murty.webp"
+    },
+    {
+      "id": "f5ca",
+      "title": "How Countries Go Broke The Big Cycle",
+      "price": "450",
+      "image": "http://127.0.0.1:5500/how%20countries%20go.webp"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "name": "Test User",
+      "email": "test@example.com"
+    }
+  ]
+}
